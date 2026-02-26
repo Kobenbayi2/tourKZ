@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Оставить отзыв - TourKZ{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'my_bookings' %}">Мои бронирования</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'booking_detail' booking.id %}">Бронирование #{{ booking.id }}</a></li>
+            <li class="breadcrumb-item active">Оставить отзыв</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-star"></i> Оставить отзыв</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <strong>Тур:</strong> {{ booking.tour_date.tour.name }}<br>
+                        <strong>Даты:</strong> {{ booking.tour_date.start_date|date:"d.m.Y" }} - {{ booking.tour_date.end_date|date:"d.m.Y" }}
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            {{ form.rating.label_tag }}
+                            {{ form.rating }}
+                            {% if form.rating.errors %}
+                                <div class="text-danger">{{ form.rating.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form.comment.label_tag }}
+                            {{ form.comment }}
+                            {% if form.comment.errors %}
+                                <div class="text-danger">{{ form.comment.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-send"></i> Отправить отзыв
+                            </button>
+                            <a href="{% url 'booking_detail' booking.id %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
