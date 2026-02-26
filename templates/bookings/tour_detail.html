@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ tour.name }} - TourKZ{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">Главная</a></li>
+            <li class="breadcrumb-item active">{{ tour.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                {% if tour.image %}
+                    <img src="{{ tour.image.url }}" class="card-img-top" alt="{{ tour.name }}" style="height: 400px; object-fit: cover;">
+                {% else %}
+                    <div class="bg-secondary d-flex align-items-center justify-content-center" style="height: 400px;">
+                        <i class="bi bi-image text-white" style="font-size: 6rem;"></i>
+                    </div>
+                {% endif %}
+                <div class="card-body">
+                    <h1 class="card-title">{{ tour.name }}</h1>
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge badge-difficulty difficulty-{{ tour.difficulty }} me-2">
+                            {{ tour.get_difficulty_display }}
+                        </span>
+                        <span class="text-muted me-3">
+                            <i class="bi bi-geo-alt"></i> {{ tour.destination_city }}
+                        </span>
+                        <span class="text-muted">
+                            <i class="bi bi-calendar"></i> {{ tour.duration_days }} дней
+                        </span>
+                    </div>
+                    <p class="card-text">{{ tour.description }}</p>
+                </div>
+            </div>
+
+            {% if tour.route_points.all %}
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-map"></i> Маршрут тура</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            {% for point in tour.route_points.all %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">
+                                                <span class="badge bg-secondary">{{ point.order }}</span>
+                                                {{ point.city.name }}
+                                            </h6>
+                                            <p class="mb-1">{{ point.description }}</p>
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock"></i> {{ point.duration_hours }} часов
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if reviews %}
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-star"></i> Отзывы ({{ reviews.count }})</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for review in reviews %}
+                            <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">{{ review.booking.user.username }}</h6>
+                                        <div class="text-warning mb-2">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= review.rating %}
+                                                    <i class="bi bi-star-fill"></i>
+                                                {% else %}
+                                                    <i class="bi bi-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <p class="mb-0">{{ review.comment }}</p>
+                                    </div>
+                                    <small class="text-muted">{{ review.created_at|date:"d.m.Y" }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-body">
+                    <h3 class="text-primary mb-3">{{ tour.price }} ₸</h3>
+                    
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="bi bi-people text-primary"></i>
+                            Макс. участников: <strong>{{ tour.max_participants }}</strong>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-calendar-event text-primary"></i>
+                            Длительность: <strong>{{ tour.duration_days }} дней</strong>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-speedometer text-primary"></i>
+                            Сложность: <strong>{{ tour.get_difficulty_display }}</strong>
+                        </li>
+                    </ul>
+
+                    <hr>
+
+                    <h5 class="mb-3">Доступные даты:</h5>
+                    {% if tour.tour_dates.all %}
+                        <div class="list-group mb-3">
+                            {% for date in tour.tour_dates.all %}
+                                {% if date.is_available %}
+                                    <a href="{% url 'create_booking' date.id %}" 
+                                       class="list-group-item list-group-item-action">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>{{ date.start_date|date:"d.m.Y" }}</strong>
+                                                <small class="text-muted d-block">
+                                                    до {{ date.end_date|date:"d.m.Y" }}
+                                                </small>
+                                            </div>
+                                            <i class="bi bi-arrow-right-circle"></i>
+                                        </div>
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            В данный момент нет доступных дат
+                        </div>
+                    {% endif %}
+
+                    {% if not user.is_authenticated %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            <a href="{% url 'login' %}">Войдите</a> для бронирования
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

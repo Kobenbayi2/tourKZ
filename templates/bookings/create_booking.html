@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Бронирование - {{ tour_date.tour.name }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'tour_detail' tour_date.tour.id %}">{{ tour_date.tour.name }}</a></li>
+            <li class="breadcrumb-item active">Бронирование</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-calendar-check"></i> Новое бронирование</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <h5>Информация о туре</h5>
+                            <p class="mb-1"><strong>Тур:</strong> {{ tour_date.tour.name }}</p>
+                            <p class="mb-1"><strong>Дата начала:</strong> {{ tour_date.start_date|date:"d.m.Y" }}</p>
+                            <p class="mb-1"><strong>Дата окончания:</strong> {{ tour_date.end_date|date:"d.m.Y" }}</p>
+                            <p class="mb-0"><strong>Цена за человека:</strong> {{ tour_date.tour.price }} ₸</p>
+                        </div>
+
+                        <hr>
+
+                        <div class="mb-3">
+                            {{ form.number_of_people.label_tag }}
+                            {{ form.number_of_people }}
+                            {% if form.number_of_people.errors %}
+                                <div class="text-danger">{{ form.number_of_people.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.notes.label_tag }}
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="text-danger">{{ form.notes.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Забронировать
+                            </button>
+                            <a href="{% url 'tour_detail' tour_date.tour.id %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Назад
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Детали тура</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="bi bi-geo-alt text-primary"></i>
+                            {{ tour_date.tour.destination_city }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-calendar text-primary"></i>
+                            {{ tour_date.tour.duration_days }} дней
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-speedometer text-primary"></i>
+                            {{ tour_date.tour.get_difficulty_display }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-people text-primary"></i>
+                            Макс. {{ tour_date.tour.max_participants }} человек
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

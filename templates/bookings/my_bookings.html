@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Мои бронирования - TourKZ{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-4"><i class="bi bi-calendar-check"></i> Мои бронирования</h1>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Фильтр по статусу</label>
+                    <select name="status" class="form-select">
+                        <option value="">Все</option>
+                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>В ожидании</option>
+                        <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Подтверждено</option>
+                        <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Отменено</option>
+                        <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Завершено</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel"></i> Применить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if page_obj %}
+        <div class="row">
+            {% for booking in page_obj %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title mb-0">{{ booking.tour_date.tour.name }}</h5>
+                                {% if booking.status == 'pending' %}
+                                    <span class="badge bg-warning">В ожидании</span>
+                                {% elif booking.status == 'confirmed' %}
+                                    <span class="badge bg-success">Подтверждено</span>
+                                {% elif booking.status == 'cancelled' %}
+                                    <span class="badge bg-danger">Отменено</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Завершено</span>
+                                {% endif %}
+                            </div>
+
+                            <p class="mb-2">
+                                <i class="bi bi-calendar"></i>
+                                <strong>Даты:</strong> {{ booking.tour_date.start_date|date:"d.m.Y" }} - {{ booking.tour_date.end_date|date:"d.m.Y" }}
+                            </p>
+                            <p class="mb-2">
+                                <i class="bi bi-people"></i>
+                                <strong>Участников:</strong> {{ booking.number_of_people }}
+                            </p>
+                            <p class="mb-2">
+                                <i class="bi bi-cash"></i>
+                                <strong>Стоимость:</strong> {{ booking.total_price }} ₸
+                            </p>
+                            <p class="mb-3">
+                                <i class="bi bi-clock"></i>
+                                <strong>Создано:</strong> {{ booking.created_at|date:"d.m.Y H:i" }}
+                            </p>
+
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'booking_detail' booking.id %}" class="btn btn-primary btn-sm flex-grow-1">
+                                    <i class="bi bi-eye"></i> Подробнее
+                                </a>
+                                {% if booking.status == 'completed' and not booking.review %}
+                                    <a href="{% url 'create_review' booking.id %}" class="btn btn-warning btn-sm">
+                                        <i class="bi bi-star"></i> Отзыв
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Навигация по страницам">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> У вас пока нет бронирований. 
+            <a href="{% url 'index' %}">Просмотрите доступные туры</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
